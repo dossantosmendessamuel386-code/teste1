@@ -1,0 +1,398 @@
+# TripSmart - Projeto Completo Next.js
+
+## 📋 Índice
+1. [Visão Geral](#visão-geral)
+2. [Estrutura do Projeto](#estrutura-do-projeto)
+3. [Instalação e Configuração](#instalação-e-configuração)
+4. [Configuração de APIs](#configuração-de-apis)
+5. [Código-Fonte](#código-fonte)
+6. [Deploy no Vercel](#deploy-no-vercel)
+
+---
+
+## 🎯 Visão Geral
+
+**TripSmart** é uma plataforma minimalista para busca de passagens aéreas, rodoviárias e hotéis, com sistema de alertas de preço via WhatsApp usando Twilio.
+
+### Tecnologias
+- Next.js 14 (App Router)
+- React 18
+- TailwindCSS
+- Amadeus API (passagens e hotéis)
+- Twilio API (WhatsApp)
+- Lucide Icons
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+tripsmart/
+├── app/
+│   ├── layout.js
+│   ├── page.js
+│   ├── results/
+│   │   └── page.js
+│   └── api/
+│       ├── search/
+│       │   └── route.js
+│       ├── alerts/
+│       │   └── route.js
+│       └── check-alerts/
+│           └── route.js
+├── components/
+│   ├── Header.js
+│   ├── SearchForm.js
+│   ├── ResultsList.js
+│   ├── HotelsList.js
+│   ├── AlertModal.js
+│   └── Footer.js
+├── lib/
+│   ├── amadeus.js
+│   ├── twilio.js
+│   └── database.js
+├── data/
+│   └── alerts.json
+├── public/
+│   └── favicon.ico
+├── styles/
+│   └── globals.css
+├── .env.local (não commitar)
+├── .env.example
+├── .gitignore
+├── package.json
+├── next.config.js
+├── tailwind.config.js
+├── postcss.config.js
+└── README.md
+```
+
+---
+
+## 🚀 Instalação e Configuração
+
+### 1. Criar o Projeto
+
+```bash
+# Criar novo projeto Next.js
+npx create-next-app@latest tripsmart
+# Escolher: Yes para TypeScript? NO
+# Escolher: Yes para ESLint? YES
+# Escolher: Yes para Tailwind? YES
+# Escolher: No para src/? NO
+# Escolher: Yes para App Router? YES
+# Escolher: No para customize import alias? NO
+
+cd tripsmart
+```
+
+### 2. Instalar Dependências
+
+```bash
+npm install lucide-react
+npm install twilio
+npm install lowdb@5.1.0
+```
+
+### 3. Criar Arquivo .env.local
+
+Crie o arquivo `.env.local` na raiz do projeto:
+
+```env
+# URL Base
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+# Amadeus API
+AMADEUS_CLIENT_ID=your_client_id_here
+AMADEUS_CLIENT_SECRET=your_client_secret_here
+AMADEUS_API_URL=https://test.api.amadeus.com
+
+# Twilio API
+TWILIO_ACCOUNT_SID=your_account_sid_here
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+```
+
+### 4. Executar Localmente
+
+```bash
+npm run dev
+```
+
+Acesse: http://localhost:3000
+
+---
+
+## 🔑 Configuração de APIs
+
+### Amadeus API
+
+1. Acesse: https://developers.amadeus.com/
+2. Crie uma conta gratuita
+3. Crie um novo app no Self-Service
+4. Copie o **API Key** (Client ID) e **API Secret** (Client Secret)
+5. Cole no arquivo `.env.local`
+
+**Nota:** O ambiente de teste tem limitações. Use dados de exemplo para desenvolvimento.
+
+### Twilio WhatsApp
+
+1. Acesse: https://www.twilio.com/
+2. Crie uma conta gratuita
+3. Vá em **Messaging** → **Try it out** → **Send a WhatsApp message**
+4. Siga as instruções para configurar o **Twilio Sandbox for WhatsApp**
+5. Envie a mensagem de ativação do seu WhatsApp para o número do Twilio
+6. Copie o **Account SID**, **Auth Token** e número **From** (formato: whatsapp:+14155238886)
+7. Cole no arquivo `.env.local`
+
+---
+
+## 💻 Código-Fonte
+
+### package.json
+
+```json
+{
+  "name": "tripsmart",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "check-alerts": "node scripts/checkAlerts.js"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "^14",
+    "lucide-react": "^0.263.1",
+    "twilio": "^5.0.0",
+    "lowdb": "^5.1.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10",
+    "postcss": "^8",
+    "tailwindcss": "^3",
+    "eslint": "^8",
+    "eslint-config-next": "^14"
+  }
+}
+```
+
+### next.config.js
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+}
+
+module.exports = nextConfig
+```
+
+### tailwind.config.js
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#3B82F6',
+        secondary: '#60A5FA',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+}
+```
+
+### app/layout.js
+
+```javascript
+import './globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'TripSmart - Busca de Passagens e Hotéis',
+  description: 'Compare preços de passagens aéreas, rodoviárias e hotéis. Receba alertas de promoções no WhatsApp.',
+}
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+### app/globals.css
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+```
+
+### app/page.js
+
+```javascript
+import Header from '@/components/Header'
+import SearchForm from '@/components/SearchForm'
+import Footer from '@/components/Footer'
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50">
+      <Header />
+      
+      <main className="max-w-4xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            Encontre as melhores passagens
+          </h2>
+          <p className="text-lg text-gray-600 mb-2">
+            Compare preços de passagens aéreas e rodoviárias em um só lugar.
+          </p>
+          <p className="text-lg text-gray-600">
+            Encontre hotéis próximos e receba alertas de promoções direto no seu WhatsApp.
+          </p>
+        </div>
+
+        <SearchForm />
+      </main>
+
+      <Footer />
+    </div>
+  )
+}
+```
+
+### components/Header.js
+
+```javascript
+'use client'
+
+import { Plane, Bell } from 'lucide-react'
+import Link from 'next/link'
+
+export default function Header() {
+  return (
+    <header className="bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <Link href="/" className="flex items-center space-x-2">
+          <Plane className="text-blue-500" size={32} />
+          <h1 className="text-2xl font-bold text-gray-800">TripSmart</h1>
+        </Link>
+        
+        <button 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="flex items-center space-x-2 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+        >
+          <Bell size={18} />
+          <span>Receber Alertas</span>
+        </button>
+      </div>
+    </header>
+  )
+}
+```
+
+### components/SearchForm.js
+
+```javascript
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { MapPin, Calendar, Search } from 'lucide-react'
+
+export default function SearchForm() {
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    origem: '',
+    destino: '',
+    dataIda: '',
+    dataVolta: ''
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    
+    if (!formData.origem || !formData.destino || !formData.dataIda) {
+      alert('Por favor, preencha origem, destino e data de ida.')
+      return
+    }
+
+    const params = new URLSearchParams(formData)
+    router.push(`/results?${params.toString()}`)
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-8">
+      <form onSubmit={handleSubmit}>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="relative">
+            <MapPin className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Origem (ex: São Paulo)"
+              value={formData.origem}
+              onChange={(e) => setFormData({...formData, origem: e.target.value})}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              required
+            />
+          </div>
+          
+          <div className="relative">
+            <MapPin className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Destino (ex: Rio de Janeiro)"
+              value={formData.destino}
+              onChange={(e) => setFormData({...formData, destino: e.target.value})}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <div className="relative">
+            <Calendar className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="date"
+              value={formData.dataIda}
+              onChange={(e) => setFormData({...formData, dataIda: e.target.value})}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              required
+            />
+          </div>
+          
+          <div className
